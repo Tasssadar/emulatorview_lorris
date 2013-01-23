@@ -395,6 +395,8 @@ class TerminalEmulator {
      */
     private final static boolean DEFAULT_TO_AUTOWRAP_ENABLED = true;
 
+    private NewlineCallback mNewlineCallback = null;
+
     /**
      * Construct a terminal emulator that uses the supplied screen
      *
@@ -648,13 +650,15 @@ class TerminalEmulator {
             setCursorCol(nextTabStop(mCursorCol));
             break;
 
-        case 13:
+        case 13: // CR
             setCursorCol(0);
             break;
 
-        case 10: // CR
+        case 10: // LF
         case 11: // VT
-        case 12: // LF
+        case 12: // FF
+            if(mAutomaticNewlineMode)
+                setCursorCol(0);
             doLinefeed();
             break;
 
@@ -905,6 +909,7 @@ class TerminalEmulator {
         int newCursorRow = mCursorRow + 1;
         if (newCursorRow >= mBottomMargin) {
             scroll();
+            mNewlineCallback.onNewline();
             newCursorRow = mBottomMargin - 1;
         }
         setCursorRow(newCursorRow);
@@ -1816,7 +1821,7 @@ class TerminalEmulator {
         mDecFlags |= K_SHOW_CURSOR_MASK;
         mSavedDecFlags = 0;
         mInsertMode = false;
-        mAutomaticNewlineMode = false;
+        mAutomaticNewlineMode = true;
         mTopMargin = 0;
         mBottomMargin = mRows;
         mAboutToAutoWrap = false;
@@ -1872,5 +1877,9 @@ class TerminalEmulator {
 
     public String getSelectedText(int x1, int y1, int x2, int y2) {
         return mScreen.getSelectedText(x1, y1, x2, y2);
+    }
+
+    public void setNewlineCallback(NewlineCallback newlineNotify) {
+        mNewlineCallback = newlineNotify;
     }
 }

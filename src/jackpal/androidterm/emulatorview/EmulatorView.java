@@ -35,7 +35,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
-import android.view.inputmethod.CorrectionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
@@ -238,8 +237,17 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
                 mSelYAnchor -= rowShift;
             }
             mEmulator.clearScrollCounter();
-            ensureCursorVisible();
+            //ensureCursorVisible();
             invalidate();
+        }
+    };
+
+    private NewlineCallback mNewlineNotify = new NewlineCallback() {
+        public void onNewline() {
+            if(mEmulator.getCursorRow() < mTopRow+mRows)
+                ensureCursorVisible();
+            else
+                --mTopRow;
         }
     };
 
@@ -529,12 +537,12 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
                 return true;
             }
 
-            public boolean commitCorrection (CorrectionInfo correctionInfo) {
+            /*public boolean commitCorrection (CorrectionInfo correctionInfo) {
                 if (LOG_IME) {
                     Log.w(TAG, "commitCorrection");
                 }
                 return true;
-            }
+            }*/
 
             public boolean commitText(CharSequence text, int newCursorPosition) {
                 if (LOG_IME) {
@@ -732,6 +740,7 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
 
         mTranscriptScreen = session.getTranscriptScreen();
         mEmulator = session.getEmulator();
+        mEmulator.setNewlineCallback(mNewlineNotify);
         session.setUpdateCallback(mUpdateNotify);
 
         requestFocus();

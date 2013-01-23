@@ -16,7 +16,10 @@
 
 package jackpal.androidterm.emulatorview.compat;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.view.KeyCharacterMap;
+
 
 public abstract class KeyCharacterMapCompat {
     public static final int MODIFIER_BEHAVIOR_CHORDED = 0;
@@ -37,6 +40,7 @@ public abstract class KeyCharacterMapCompat {
         public KeyCharacterMapApi11OrLater(Object map) {
             mMap = (KeyCharacterMap) map;
         }
+        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
         public int getModifierBehaviour() {
             return mMap.getModifierBehavior();
         }

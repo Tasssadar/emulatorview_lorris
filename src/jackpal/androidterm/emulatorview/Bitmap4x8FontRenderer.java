@@ -26,6 +26,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.util.Log;
 
 
 class Bitmap4x8FontRenderer extends BaseTextRenderer {
@@ -40,9 +41,18 @@ class Bitmap4x8FontRenderer extends BaseTextRenderer {
 
     public Bitmap4x8FontRenderer(Resources resources, ColorScheme scheme) {
         super(scheme);
-        int fontResource = AndroidCompat.SDK <= 3 ? R.drawable.atari_small
-                : R.drawable.atari_small_nodpi;
+        int fontResource = -1;
+
+        if(AndroidCompat.SDK <= 3) {
+            fontResource = resources.getIdentifier("atari_small", "drawable", "com.tassadar.lorrismobile");
+            Log.e("AAAA", "Loading 1, res " + fontResource + "\n");
+        }else {
+            fontResource = resources.getIdentifier("atari_small_nodpi", "drawable", "com.tassadar.lorrismobile");
+            Log.e("AAAA", "Loading 2, res " + fontResource + "\n");
+        }
+
         mFont = BitmapFactory.decodeResource(resources,fontResource);
+        Log.e("AAAA", "Loading 3, " + mFont + "\n");
         mPaint = new Paint();
         mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
     }
