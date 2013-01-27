@@ -733,7 +733,7 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
     /**
      * Call this to initialize the view.
      */
-    private void initialize() {
+    public void initialize() {
         TermSession session = mTermSession;
 
         updateText();
@@ -742,8 +742,6 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
         mEmulator = session.getEmulator();
         mEmulator.setNewlineCallback(mNewlineNotify);
         session.setUpdateCallback(mUpdateNotify);
-
-        requestFocus();
     }
 
     /**

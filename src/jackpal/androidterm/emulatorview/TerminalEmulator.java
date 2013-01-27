@@ -909,7 +909,8 @@ class TerminalEmulator {
         int newCursorRow = mCursorRow + 1;
         if (newCursorRow >= mBottomMargin) {
             scroll();
-            mNewlineCallback.onNewline();
+            if(mNewlineCallback != null)
+                mNewlineCallback.onNewline();
             newCursorRow = mBottomMargin - 1;
         }
         setCursorRow(newCursorRow);

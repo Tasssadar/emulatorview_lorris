@@ -21,7 +21,7 @@ package jackpal.androidterm.emulatorview;
  * Only allows one producer and one consumer.
  */
 
-class ByteQueue {
+public class ByteQueue {
     public ByteQueue(int size) {
         mBuffer = new byte[size];
     }
@@ -67,13 +67,19 @@ class ByteQueue {
                 totalRead += bytesToCopy;
             }
             if (wasFull) {
-                notify();
+                notifyAll();
             }
             return totalRead;
         }
     }
 
-    public void write(byte[] buffer, int offset, int length)
+    /**
+     * Attempt to write the specified portion of the provided buffer to
+     * the queue.  Returns the number of bytes actually written to the queue;
+     * it is the caller's responsibility to check whether all of the data
+     * was written and repeat the call to write() if necessary.
+     */
+    public int write(byte[] buffer, int offset, int length)
     throws InterruptedException {
         if (length + offset > buffer.length) {
             throw
@@ -85,32 +91,31 @@ class ByteQueue {
 
         }
         if (length == 0) {
-            return;
+            return 0;
         }
         synchronized(this) {
             int bufferLength = mBuffer.length;
             boolean wasEmpty = mStoredBytes == 0;
-            while (length > 0) {
-                while(bufferLength == mStoredBytes) {
-                    wait();
-                }
-                int tail = mHead + mStoredBytes;
-                int oneRun;
-                if (tail >= bufferLength) {
-                    tail = tail - bufferLength;
-                    oneRun = mHead - tail;
-                } else {
-                    oneRun = bufferLength - tail;
-                }
-                int bytesToCopy = Math.min(oneRun, length);
-                System.arraycopy(buffer, offset, mBuffer, tail, bytesToCopy);
-                offset += bytesToCopy;
-                mStoredBytes += bytesToCopy;
-                length -= bytesToCopy;
+            while(bufferLength == mStoredBytes) {
+                wait();
             }
+            int tail = mHead + mStoredBytes;
+            int oneRun;
+            if (tail >= bufferLength) {
+                tail = tail - bufferLength;
+                oneRun = mHead - tail;
+            } else {
+                oneRun = bufferLength - tail;
+            }
+            int bytesToCopy = Math.min(oneRun, length);
+            System.arraycopy(buffer, offset, mBuffer, tail, bytesToCopy);
+            offset += bytesToCopy;
+            mStoredBytes += bytesToCopy;
             if (wasEmpty) {
-                notify();
+                //notify();
+                notifyAll();
             }
+            return bytesToCopy;
         }
     }
 
