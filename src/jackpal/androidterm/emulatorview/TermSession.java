@@ -242,7 +242,6 @@ public class TermSession {
      */
     public void write(byte[] data, int offset, int count) {
         try {
-            mWriteQueue.write(data, offset, count);
             while (count > 0) {
                 int written = mWriteQueue.write(data, offset, count);
                 offset += written;
