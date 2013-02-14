@@ -32,6 +32,13 @@ public class ByteQueue {
         }
     }
 
+    public void close() {
+        synchronized(this) {
+            mOpen = false;
+            notifyAll();
+        }
+    }
+
     public int read(byte[] buffer, int offset, int length)
         throws InterruptedException {
         if (length + offset > buffer.length) {
@@ -47,9 +54,13 @@ public class ByteQueue {
             return 0;
         }
         synchronized(this) {
-            while (mStoredBytes == 0) {
+            while (mStoredBytes == 0 && mOpen) {
                 wait();
             }
+
+            if(!mOpen)
+                return 0;
+
             int totalRead = 0;
             int bufferLength = mBuffer.length;
             boolean wasFull = bufferLength == mStoredBytes;
@@ -96,9 +107,13 @@ public class ByteQueue {
         synchronized(this) {
             int bufferLength = mBuffer.length;
             boolean wasEmpty = mStoredBytes == 0;
-            while(bufferLength == mStoredBytes) {
+            while(bufferLength == mStoredBytes && mOpen) {
                 wait();
             }
+
+            if(!mOpen)
+                return 0;
+
             int tail = mHead + mStoredBytes;
             int oneRun;
             if (tail >= bufferLength) {
@@ -122,4 +137,5 @@ public class ByteQueue {
     private byte[] mBuffer;
     private int mHead;
     private int mStoredBytes;
+    private boolean mOpen = true;
 }

@@ -228,8 +228,12 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
     /**
      * Called by the TermSession when the contents of the view need updating
      */
-    private UpdateCallback mUpdateNotify = new UpdateCallback() {
+    private class UpdateCallbackClass implements UpdateCallback {
+        public boolean enabled = true;
         public void onUpdate() {
+            if(!enabled)
+                return;
+
             if ( mIsSelectingText ) {
                 int rowShift = mEmulator.getScrollCounter();
                 mSelY1 -= rowShift;
@@ -240,7 +244,10 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
             //ensureCursorVisible();
             invalidate();
         }
-    };
+
+    }
+
+    private UpdateCallbackClass mUpdateNotify = new UpdateCallbackClass();
 
     private NewlineCallback mNewlineNotify = new NewlineCallback() {
         public void onNewline() {
@@ -1207,7 +1214,7 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
     protected void onDraw(Canvas canvas) {
         updateSize(false);
 
-        if (mEmulator == null) {
+        if (mEmulator == null || !mUpdateNotify.enabled) {
             // Not ready yet
             return;
         }
@@ -1351,5 +1358,9 @@ public class EmulatorView extends View implements GestureDetector.OnGestureListe
     public void setTermType(String termType) {
          mKeyListener.setTermType(termType);
          mTermType = termType;
+    }
+
+    public void setUpdateEnable(boolean enable) {
+        mUpdateNotify.enabled = enable;
     }
 }
